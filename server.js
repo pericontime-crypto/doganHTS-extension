@@ -64,6 +64,7 @@ app.post('/analyze', async (req, res) => {
     const claudeData = await claudeResponse.json();
 
     if (!claudeResponse.ok) {
+      console.error('Anthropic API Detayli Hata:', JSON.stringify(claudeData, null, 2));
       throw new Error(claudeData.error ? claudeData.error.message : 'Claude API hatasi');
     }
 
