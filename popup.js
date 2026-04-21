@@ -2,7 +2,31 @@ let scannedDocuments = [];
 let analyzedData = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
-  setStatus('✅ Hazır', 'success');
+  // Önceki analiz sonuçlarını yükle
+  const stored = await chrome.storage.local.get(['analyzedData', 'scannedDocuments']);
+  
+  if (stored.analyzedData && Object.keys(stored.analyzedData).length > 0) {
+    analyzedData = stored.analyzedData;
+    showResults(analyzedData);
+    document.getElementById('fillBtn').disabled = false;
+    setStatus('✅ Önceki analiz sonuçları yüklendi', 'success');
+  }
+
+  if (stored.scannedDocuments && stored.scannedDocuments.length > 0) {
+    scannedDocuments = stored.scannedDocuments;
+    const docList = document.getElementById('docList');
+    docList.innerHTML = scannedDocuments.map(d => 
+      `<div class="doc-item">${d.name.substring(0,40)} — <b>${d.type}</b></div>`
+    ).join('');
+    document.getElementById('analyzeBtn').disabled = false;
+    if (!stored.analyzedData) {
+      setStatus(`✅ ${scannedDocuments.length} evrak hazır (önceden taranmış)`, 'success');
+    }
+  }
+
+  if (!stored.analyzedData && !stored.scannedDocuments) {
+    setStatus('✅ Hazır', 'success');
+  }
 });
 
 function setStatus(message, type) {
@@ -10,6 +34,15 @@ function setStatus(message, type) {
   if (!bar) return;
   bar.textContent = message;
   bar.className = type === 'error' ? 'error' : type === 'loading' ? 'loading' : '';
+}
+
+function showResults(data) {
+  const results = document.getElementById('results');
+  results.style.display = 'block';
+  results.innerHTML = Object.entries(data)
+    .filter(([k, v]) => v)
+    .map(([k, v]) => `<div class="r-item"><span class="r-key">${k}</span><span class="r-val">${v}</span></div>`)
+    .join('');
 }
 
 document.getElementById('scanBtn').addEventListener('click', async () => {
@@ -20,6 +53,12 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
     
     if (response.success && response.documents.length > 0) {
       scannedDocuments = response.documents;
+
+      // Taranan evrakları kaydet (base64 hariç, sadece meta bilgi)
+      await chrome.storage.local.set({ 
+        scannedDocuments: scannedDocuments.map(d => ({ name: d.name, url: d.url, type: d.type }))
+      });
+
       const docList = document.getElementById('docList');
       docList.innerHTML = scannedDocuments.map(d => 
         `<div class="doc-item">${d.name.substring(0,40)} — <b>${d.type}</b></div>`
@@ -73,14 +112,13 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
 
     if (response.success) {
       analyzedData = response.data;
-      const results = document.getElementById('results');
-      results.style.display = 'block';
-      results.innerHTML = Object.entries(analyzedData)
-        .filter(([k, v]) => v)
-        .map(([k, v]) => `<div class="r-item"><span class="r-key">${k}</span><span class="r-val">${v}</span></div>`)
-        .join('');
+      
+      // Sonuçları chrome.storage.local'a kaydet
+      await chrome.storage.local.set({ analyzedData: analyzedData });
+      
+      showResults(analyzedData);
       document.getElementById('fillBtn').disabled = false;
-      setStatus('✅ Analiz tamamlandı!', 'success');
+      setStatus('✅ Analiz tamamlandı! (Sonuçlar kaydedildi)', 'success');
     } else {
       setStatus('❌ ' + response.error, 'error');
       document.getElementById('analyzeBtn').disabled = false;
@@ -107,4 +145,17 @@ document.getElementById('fillBtn').addEventListener('click', async () => {
   } catch (err) {
     setStatus('❌ Hata: ' + err.message, 'error');
   }
+});
+
+// Temizle butonu - yeni dosya için sıfırla
+document.getElementById('clearBtn')?.addEventListener('click', async () => {
+  await chrome.storage.local.remove(['analyzedData', 'scannedDocuments']);
+  analyzedData = {};
+  scannedDocuments = [];
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('docList').innerHTML = '';
+  document.getElementById('fillBtn').disabled = true;
+  document.getElementById('analyzeBtn').disabled = true;
+  setStatus('🗑️ Temizlendi. Yeni tarama yapabilirsiniz.', 'success');
 });

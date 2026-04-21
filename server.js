@@ -31,9 +31,9 @@ app.post('/analyze', async (req, res) => {
 
     const content = [];
 
-    documents.forEach(function(doc) {
+    documents.forEach(function (doc) {
       if (!doc.base64) return;
-      
+
       content.push({ type: 'text', text: 'Evrak adi: ' + doc.name + ', Turu: ' + doc.type });
 
       if (doc.mimeType === 'application/pdf') {
@@ -51,67 +51,71 @@ app.post('/analyze', async (req, res) => {
 
     content.push({
       type: 'text',
-      text: `Sen bir sigorta hukuku uzmanısın. Sana verilen evrakları dikkatle incele ve bilgileri çıkar.
+      text: `Sen bir sigorta hukuku uzmanısın. Sana verilen tüm belgeleri (PDF ve görsel) çok titiz bir şekilde analiz et ve aşağıdaki kurallara göre JSON verisi oluştur.
 
 ÖNEMLİ KURALLAR:
-1. "Bizim müvekkil" = zarar gören taraf, yani ruhsatname (araç tescil belgesi) ve vekaletname evraklarındaki kişidir.
-2. "Karşı taraf" = kazaya sebep olan, kusurlu olan, sigorta poliçesi bizden tazminat talep edilen taraftır.
-3. Kaza tutanağında (tespit tutanağı) genellikle iki taraf vardır: 
-   - "1. Sürücü / Taraf A" ve "2. Sürücü / Taraf B" şeklinde olabilir
-   - Ruhsatnamedeki plaka ile eşleşen taraf BİZİM taraftır
-   - Diğer taraf KARŞI taraftır
-4. Eğer vekaletnamedeki TC kimlik numarası tutanaktaki bir tarafla eşleşiyorsa, o taraf BİZİM müvekkildir.
-5. Plaka bilgisi: Ruhsatnamede yazan plaka = bizim plaka. Tutanakta yazan diğer plaka = karşı taraf plaka.
 
-SİGORTALI ve SÜRÜCÜ AYRIMI:
-- RUHSATNAMEDEKİ kişi bilgileri = SİGORTALI (araç sahibi) bilgileridir
-- KTT (Kaza Tespit Tutanağı) daki sürücü bilgileri = SÜRÜCÜ bilgileridir
-- Sigortalı ve sürücü farklı kişiler olabilir, ayrı ayrı çıkar
+1. TARAF BELİRLEME (PLAKA ÜZERİNDEN):
+   - "Bizim Aracımız": "Bizim Ruhsat" belgesindeki plakadır.
+   - KTT (Kaza Tespit Tutanağı) içindeki Taraf A ve Taraf B'yi plakalarla karşılaştır. Bizim ruhsat plakasıyla eşleşen bölüm BİZİM TARAFIMIZDIR. Diğer plaka KARŞI TARAFTIR.
 
-KARŞI TARAF POLİÇE BİLGİLERİ:
-- Karşı tarafın sigorta poliçesinden: poliçe no, yenileme no, başlangıç tarihi, bitiş tarihi bilgilerini çıkar
+2. BİZİM SÜRÜCÜ BİLGİLERİ (Sadece KTT):
+   - Bizim plakamızla eşleşen KTT bölümündeki Sürücü bilgilerini al.
+   - İSİM VE SOYİSMİ AYIR: İsmi ve Soyismi mutlaka iki ayrı alana böl. (Örn: "Mehmet Ali Yılmaz" -> Ad: Mehmet Ali, Soyad: Yılmaz).
+   - Sürücü TC numarasını KTT üzerinden oku.
 
-RAYİÇ BEDEL:
-- Evraklarda rayiç bedel, piyasa değeri veya araç değeri olarak geçen tutarı "rayic_bedel" alanına yaz
+3. KARŞI TARAF SİGORTALI VE SÜRÜCÜ AYRIMI:
+   - KARŞI SİGORTALI (Araç Sahibi): Karşı tarafın ruhsatındaki araç sahibidir. Ad, Soyad ve TC/VKN bilgilerini çıkar.
+   - KARŞI SÜRÜCÜ: KTT'de karşı tarafın plakasıyla eşleşen sürücü bilgileridir. Ad, Soyad ve TC bilgilerini çıkar.
+   - ŞİRKET/VKN KONTROLÜ: Karşı sigortalı bir şahıs değilse (şirketse), şirket adını "karsi_sigortali_ad" alanına yaz, Vergi Numarasını ise "karsi_sigortali_tc_vkn" alanına yaz. Şirket durumunda soyadı boş bırak.
 
-HASAR YERİ:
-- KTT veya eksper raporundan kazanın olduğu il ve ilçeyi çıkar
+4. KARŞI POLİÇE DETAYLARI:
+   - ÖNCELİK "Karşı Poliçe" isimli belgededir. Bu belgeden: Poliçe No, Yenileme No, Poliçe Başlangıç ve Bitiş tarihlerini al.
 
-KM BİLGİSİ:
-- Eksper raporundan veya diğer evraklardan aracın kilometre bilgisini çıkar
+5. RAYİÇ / PİYASA DEĞERLERİ:
+   - Bulduğun 3 farklı miktar bilgisini sırasıyla "fiyat_01", "fiyat_02" ve "fiyat_03" alanlarına yaz. Eğer 3'ten az varsa, olanları yaz, diğerlerini boş bırak.
 
-Aşağıdaki bilgileri JSON formatında döndür. Başka hiçbir açıklama veya yorum ekleme, sadece JSON döndür:
+6. VEKALETNAME ANALİZİ:
+   - "Vekalet" belgesinden: Başlangıç tarihini çıkar. Varsa Bitiş tarihini çıkar, yoksa "süresiz" yaz.
+
+7. HASAR YERİ VE KİLOMETRE:
+   - KTT veya Eksper Raporundan: Kazanın olduğu IL ve ILÇE bilgisini çıkar.
+   - Eksper raporu veya ruhsat eklerinden aracın KİLOMETRE (KM) bilgisini "arac_km" alanına yaz.
+
+LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
 {
-  "sigortali_ad": "Ruhsatnamedeki araç sahibinin adı",
-  "sigortali_soyad": "Ruhsatnamedeki araç sahibinin soyadı",
-  "sigortali_tc": "Ruhsatnamedeki araç sahibinin TC kimlik no",
-  "surucu_ad": "KTT deki sürücünün adı (bizim taraf)",
-  "surucu_soyad": "KTT deki sürücünün soyadı (bizim taraf)",
-  "surucu_tc": "KTT deki sürücünün TC kimlik no (bizim taraf)",
-  "plaka": "Bizim aracın plakası (ruhsatnameden)",
-  "arac_marka": "Bizim aracın markası",
-  "arac_model": "Bizim aracın modeli",
-  "arac_yil": "Bizim aracın model yılı",
-  "motor_no": "Bizim aracın motor numarası",
-  "sasi_no": "Bizim aracın şasi numarası",
-  "arac_km": "Aracın kilometre bilgisi",
-  "kaza_tarihi": "Kazanın tarihi (GG.AA.YYYY)",
-  "hasar_il": "Kazanın olduğu il",
-  "hasar_ilce": "Kazanın olduğu ilçe",
-  "kusur_orani": "Karşı tarafın kusur oranı (% olarak)",
-  "hasar_miktari": "Hasar tutarı (TL)",
-  "rayic_bedel": "Aracın rayiç/piyasa değeri (TL)",
-  "karsi_taraf_tc": "Karşı tarafın TC kimlik no",
-  "karsi_taraf_ad": "Karşı tarafın adı",
-  "karsi_taraf_soyad": "Karşı tarafın soyadı",
-  "karsi_taraf_plaka": "Karşı tarafın plakası",
-  "karsi_sigorta_sirketi": "Karşı tarafın sigorta şirketi adı",
-  "karsi_police_no": "Karşı tarafın poliçe numarası",
-  "karsi_yenileme_no": "Karşı tarafın poliçe yenileme numarası",
-  "karsi_police_baslangic": "Karşı tarafın poliçe başlangıç tarihi (GG.AA.YYYY)",
-  "karsi_police_bitis": "Karşı tarafın poliçe bitiş tarihi (GG.AA.YYYY)",
-  "degisen_parcalar": "Değişen/onarılan parçalar listesi",
-  "eksper_rapor_no": "Ekspertiz rapor numarası"
+  "surucu_ad": "",
+  "surucu_soyad": "",
+  "surucu_tc": "",
+  "plaka": "Bizim Plakamız",
+  "arac_marka": "",
+  "arac_model": "",
+  "arac_yil": "",
+  "motor_no": "",
+  "sasi_no": "",
+  "arac_km": "",
+  "kaza_tarihi": "GG.AA.YYYY",
+  "hasar_il": "",
+  "hasar_ilce": "",
+  "kusur_orani": "",
+  "hasar_miktari": "",
+  "fiyat_01": "",
+  "fiyat_02": "",
+  "fiyat_03": "",
+  "karsi_sigortali_ad": "Şahıs adı veya Şirket Ünvanı",
+  "karsi_sigortali_soyad": "Şirketse boş bırak",
+  "karsi_sigortali_tc_vkn": "TC veya Vergi No",
+  "karsi_surucu_ad": "",
+  "karsi_surucu_soyad": "",
+  "karsi_surucu_tc": "",
+  "karsi_taraf_plaka": "",
+  "karsi_sigorta_sirketi": "",
+  "karsi_police_no": "",
+  "karsi_yenileme_no": "",
+  "karsi_police_baslangic": "GG.AA.YYYY",
+  "karsi_police_bitis": "GG.AA.YYYY",
+  "vekalet_baslangic": "GG.AA.YYYY",
+  "vekalet_bitis": "GG.AA.YYYY veya süresiz"
 }`
     });
 
@@ -137,17 +141,17 @@ Aşağıdaki bilgileri JSON formatında döndür. Başka hiçbir açıklama veya
     }
 
     const text = claudeData.content[0].text;
-    
+
     // JSON'ı temizle (AI bazen ```json ... ``` içinde gönderir)
     let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
+
     // Eğer metnin başında/sonunda JSON dışı karakterler varsa temizle
     const firstBrace = cleanText.indexOf('{');
     const lastBrace = cleanText.lastIndexOf('}');
     if (firstBrace !== -1 && lastBrace !== -1) {
       cleanText = cleanText.substring(firstBrace, lastBrace + 1);
     }
-    
+
     const result = JSON.parse(cleanText);
 
     res.json(result);
@@ -158,6 +162,6 @@ Aşağıdaki bilgileri JSON formatında döndür. Başka hiçbir açıklama veya
   }
 });
 
-app.listen(PORT, function() {
+app.listen(PORT, function () {
   console.log('Dogan HTS Sunucu calisiyor: port ' + PORT);
 });
