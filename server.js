@@ -65,11 +65,16 @@ EKSPER RAPORU ÖZEL KURALLARI:
    - "MAĞDUR ARAÇ SÜRÜCÜ BİLGİLERİ" = BİZİM sürücümüzdür.
    - "SİGORTALI ARACIN SÜRÜCÜSÜNE İLİŞKİN BİLGİLER" = KARŞI tarafın sürücüsüdür.
 
-2. HASAR VE ONARIM BİLGİLERİ:
+2. POLİÇE VE SİGORTA KONTROLÜ:
+   - Eksper raporunun en üstündeki "POLİÇE BİLGİLERİ" bölümündeki kişi (Şerife İdiz gibi) tazminat talep edenle (Naile Turan gibi) aynı değilse, bu bilgiler KARŞI TARAFIN poliçesidir.
+   - "ACENTE NO/POLİÇE NO" kısmında "/" işaretinden sonraki ikinci büyük numara POLİÇE NUMARASIDIR.
+   - "POLİÇE VADESİ" kısmındaki ilk tarih Başlangıç, ikinci tarih Bitiş tarihidir.
+
+3. HASAR VE ONARIM BİLGİLERİ:
    - "HASAR BİLGİLERİ" bölümünden: Kaza Tarihi, Hasar İli/İlçesi ve "Hasar Onarım Süresi" (İş Günü olarak) bilgilerini al.
    - "HASAR TUTARI" Tablosundan: "Toplam Tutar" bilgisini hasar miktarı olarak al.
 
-3. DİĞER KURALLAR:
+4. DİĞER KURALLAR:
    - İsim ve Soyismi mutlaka ayır.
    - Karşı taraf sigortalı kısmında şirket ünvanı varsa (Örn: ... LTD ŞTİ), ünvanı "karsi_sigortali_ad" kısmına, Vergi No'yu "karsi_sigortali_tc_vkn" kısmına yaz.
    - Vekalet belgesinden başlangıç/bitiş tarihlerini al (bitiş yoksa "süresiz").
