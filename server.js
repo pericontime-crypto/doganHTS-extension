@@ -79,7 +79,7 @@ EKSPER RAPORU ÖZEL KURALLARI:
    - Karşı taraf sigortalı kısmında şirket ünvanı varsa (Örn: ... LTD ŞTİ), ünvanı "karsi_sigortali_ad" kısmına, Vergi No'yu "karsi_sigortali_tc_vkn" kısmına yaz.
    - Vekalet belgesinden başlangıç/bitiş tarihlerini al (bitiş yoksa "süresiz").
 
-LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
+LÜTFEN SADECE VE SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER. BAŞLIK, AÇIKLAMA VEYA MARKDOWN KULLANMA. SADECE JSON:
 {
   "surucu_ad": "",
   "surucu_soyad": "",
@@ -128,7 +128,7 @@ LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
+        max_tokens: 1500,
         messages: [{ role: 'user', content: content }]
       })
     });
@@ -141,20 +141,25 @@ LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
     }
 
     const text = claudeData.content[0].text;
-
-    // JSON'ı temizle (AI bazen ```json ... ``` içinde gönderir)
-    let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    // Eğer metnin başında/sonunda JSON dışı karakterler varsa temizle
-    const firstBrace = cleanText.indexOf('{');
-    const lastBrace = cleanText.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1) {
-      cleanText = cleanText.substring(firstBrace, lastBrace + 1);
+    console.log('AI Ham Yanit:', text); // Debug için log ekledim
+    
+    // JSON'ı temizle (Sadece ilk { ve son } arasini al)
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    
+    if (firstBrace === -1 || lastBrace === -1) {
+      throw new Error('AI geçerli bir JSON formatı döndürmedi: ' + text.substring(0, 100));
     }
-
-    const result = JSON.parse(cleanText);
-
-    res.json(result);
+    
+    const cleanJSON = text.substring(firstBrace, lastBrace + 1);
+    
+    try {
+      const result = JSON.parse(cleanJSON);
+      res.json(result);
+    } catch (parseError) {
+      console.error('JSON Parse Hatasi:', cleanJSON);
+      throw new Error('AI tarafindan gönderilen veri okunamadi (Format hatasi)');
+    }
 
   } catch (err) {
     console.error('Analiz hatasi:', err);
