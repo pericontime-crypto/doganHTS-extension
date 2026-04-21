@@ -34,11 +34,20 @@ function collectDocuments() {
       if (prevHeader) fileType = prevHeader;
     }
 
-    documents.push({
-      name: displayName || `Evrak_${index + 1}`,
-      url: url,
-      type: fileType
-    });
+    // Filtrele: Hasar ve onarım fotoğraflarını alma
+    const forbiddenKeywords = ['hasar', 'onarim', 'foto', 'resim', 'goruntu', 'ekspertiz'];
+    const isForbidden = forbiddenKeywords.some(key => 
+      (fileType || '').toLowerCase().includes(key) || 
+      (displayName || '').toLowerCase().includes(key)
+    );
+
+    if (!isForbidden) {
+      documents.push({
+        name: displayName || `Evrak_${index + 1}`,
+        url: url,
+        type: fileType
+      });
+    }
   });
 
   // PDF linkleri de ekle
@@ -59,9 +68,15 @@ function collectDocuments() {
       });
     }
 
-    // Duplicate kontrolü
+    // Duplicate ve Filtre kontrolü
     const exists = documents.find(d => d.url === url);
-    if (!exists) {
+    const forbiddenKeywords = ['hasar', 'onarim', 'foto', 'resim', 'goruntu', 'ekspertiz'];
+    const isForbidden = forbiddenKeywords.some(key => 
+      (fileType || '').toLowerCase().includes(key) || 
+      (fileName || '').toLowerCase().includes(key)
+    );
+
+    if (!exists && !isForbidden) {
       documents.push({
         name: fileName,
         url: url,
