@@ -10,6 +10,13 @@ const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Başlangıçta anahtar kontrolü
+if (!CLAUDE_API_KEY) {
+  console.error('KRİTİK HATA: CLAUDE_API_KEY tanımlanmamış! Lütfen Render panelinden Environment Variables kısmını kontrol edin.');
+} else {
+  console.log('API Anahtarı tespit edildi. Uzunluk:', CLAUDE_API_KEY.length);
+}
+
 app.get('/status', (req, res) => {
   res.json({ status: 'ok', version: '1.0', message: 'Dogan HTS Sunucu aktif' });
 });
