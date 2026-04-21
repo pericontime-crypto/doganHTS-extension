@@ -51,36 +51,23 @@ app.post('/analyze', async (req, res) => {
 
     content.push({
       type: 'text',
-      text: `Sen bir sigorta hukuku uzmanısın. Sana verilen tüm belgeleri (PDF ve görsel) çok titiz bir şekilde analiz et ve aşağıdaki kurallara göre JSON verisi oluştur.
+      text: `Sen bir sigorta hukuku uzmanısın. Sana verilen belgeleri (özellikle Eksper Raporu ve KTT) çok titiz analiz et.
 
-ÖNEMLİ KURALLAR:
+EKSPER RAPORU ÖZEL KURALLARI:
+1. TARAF AYRIMI:
+   - "TAZMİNAT TALEP EDEN" veya "MAĞDUR ARAÇ" başlığı altındaki tüm bilgiler BİZİM tarafımızdır.
+   - "SİGORTALI ARACA İLİŞKİN BİLGİLER" başlığı altındakiler KARŞI tarafın bilgileridir.
+   - "MAĞDUR ARAÇ SÜRÜCÜ BİLGİLERİ" = BİZİM sürücümüzdür.
+   - "SİGORTALI ARACIN SÜRÜCÜSÜNE İLİŞKİN BİLGİLER" = KARŞI tarafın sürücüsüdür.
 
-1. TARAF BELİRLEME (PLAKA ÜZERİNDEN):
-   - "Bizim Aracımız": "Bizim Ruhsat" belgesindeki plakadır.
-   - KTT (Kaza Tespit Tutanağı) içindeki Taraf A ve Taraf B'yi plakalarla karşılaştır. Bizim ruhsat plakasıyla eşleşen bölüm BİZİM TARAFIMIZDIR. Diğer plaka KARŞI TARAFTIR.
+2. HASAR VE ONARIM BİLGİLERİ:
+   - "HASAR BİLGİLERİ" bölümünden: Kaza Tarihi, Hasar İli/İlçesi ve "Hasar Onarım Süresi" (İş Günü olarak) bilgilerini al.
+   - "HASAR TUTARI" Tablosundan: "Toplam Tutar" bilgisini hasar miktarı olarak al.
 
-2. BİZİM SÜRÜCÜ BİLGİLERİ (Sadece KTT):
-   - Bizim plakamızla eşleşen KTT bölümündeki Sürücü bilgilerini al.
-   - İSİM VE SOYİSMİ AYIR: İsmi ve Soyismi mutlaka iki ayrı alana böl. (Örn: "Mehmet Ali Yılmaz" -> Ad: Mehmet Ali, Soyad: Yılmaz).
-   - Sürücü TC numarasını KTT üzerinden oku.
-
-3. KARŞI TARAF SİGORTALI VE SÜRÜCÜ AYRIMI:
-   - KARŞI SİGORTALI (Araç Sahibi): Karşı tarafın ruhsatındaki araç sahibidir. Ad, Soyad ve TC/VKN bilgilerini çıkar.
-   - KARŞI SÜRÜCÜ: KTT'de karşı tarafın plakasıyla eşleşen sürücü bilgileridir. Ad, Soyad ve TC bilgilerini çıkar.
-   - ŞİRKET/VKN KONTROLÜ: Karşı sigortalı bir şahıs değilse (şirketse), şirket adını "karsi_sigortali_ad" alanına yaz, Vergi Numarasını ise "karsi_sigortali_tc_vkn" alanına yaz. Şirket durumunda soyadı boş bırak.
-
-4. KARŞI POLİÇE DETAYLARI:
-   - ÖNCELİK "Karşı Poliçe" isimli belgededir. Bu belgeden: Poliçe No, Yenileme No, Poliçe Başlangıç ve Bitiş tarihlerini al.
-
-5. RAYİÇ / PİYASA DEĞERLERİ:
-   - Bulduğun 3 farklı miktar bilgisini sırasıyla "fiyat_01", "fiyat_02" ve "fiyat_03" alanlarına yaz. Eğer 3'ten az varsa, olanları yaz, diğerlerini boş bırak.
-
-6. VEKALETNAME ANALİZİ:
-   - "Vekalet" belgesinden: Başlangıç tarihini çıkar. Varsa Bitiş tarihini çıkar, yoksa "süresiz" yaz.
-
-7. HASAR YERİ VE KİLOMETRE:
-   - KTT veya Eksper Raporundan: Kazanın olduğu IL ve ILÇE bilgisini çıkar.
-   - Eksper raporu veya ruhsat eklerinden aracın KİLOMETRE (KM) bilgisini "arac_km" alanına yaz.
+3. DİĞER KURALLAR:
+   - İsim ve Soyismi mutlaka ayır.
+   - Karşı taraf sigortalı kısmında şirket ünvanı varsa (Örn: ... LTD ŞTİ), ünvanı "karsi_sigortali_ad" kısmına, Vergi No'yu "karsi_sigortali_tc_vkn" kısmına yaz.
+   - Vekalet belgesinden başlangıç/bitiş tarihlerini al (bitiş yoksa "süresiz").
 
 LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
 {
@@ -97,14 +84,15 @@ LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
   "kaza_tarihi": "GG.AA.YYYY",
   "hasar_il": "",
   "hasar_ilce": "",
+  "onarim_suresi": "Gündüz sayısı",
   "kusur_orani": "",
-  "hasar_miktari": "",
+  "hasar_miktari": "TL tutarı",
   "fiyat_01": "",
   "fiyat_02": "",
   "fiyat_03": "",
-  "karsi_sigortali_ad": "Şahıs adı veya Şirket Ünvanı",
-  "karsi_sigortali_soyad": "Şirketse boş bırak",
-  "karsi_sigortali_tc_vkn": "TC veya Vergi No",
+  "karsi_sigortali_ad": "",
+  "karsi_sigortali_soyad": "",
+  "karsi_sigortali_tc_vkn": "",
   "karsi_surucu_ad": "",
   "karsi_surucu_soyad": "",
   "karsi_surucu_tc": "",
@@ -115,7 +103,9 @@ LÜTFEN SADECE AŞAĞIDAKİ JSON YAPISINDA CEVAP VER:
   "karsi_police_baslangic": "GG.AA.YYYY",
   "karsi_police_bitis": "GG.AA.YYYY",
   "vekalet_baslangic": "GG.AA.YYYY",
-  "vekalet_bitis": "GG.AA.YYYY veya süresiz"
+  "vekalet_bitis": "GG.AA.YYYY veya süresiz",
+  "degisen_parcalar": "",
+  "eksper_rapor_no": ""
 }`
     });
 
