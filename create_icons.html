@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Creator</title></head>
+<body>
+<canvas id="c16" width="16" height="16"></canvas>
+<canvas id="c48" width="48" height="48"></canvas>
+<canvas id="c128" width="128" height="128"></canvas>
+
+<br><br>
+<a id="dl16" download="icon16.png">icon16.png indir</a><br>
+<a id="dl48" download="icon48.png">icon48.png indir</a><br>
+<a id="dl128" download="icon128.png">icon128.png indir</a>
+
+<script>
+function drawIcon(canvasId, size) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  
+  // Arka plan
+  ctx.fillStyle = '#1a1a2e';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, size * 0.15);
+  ctx.fill();
+  
+  // Harf D
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${size * 0.6}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('D', size / 2, size / 2);
+}
+
+function makeDownloadLink(canvasId, linkId) {
+  const canvas = document.getElementById(canvasId);
+  const link = document.getElementById(linkId);
+  link.href = canvas.toDataURL('image/png');
+}
+
+drawIcon('c16', 16);
+drawIcon('c48', 48);
+drawIcon('c128', 128);
+
+makeDownloadLink('c16', 'dl16');
+makeDownloadLink('c48', 'dl48');
+makeDownloadLink('c128', 'dl128');
+</script>
+</body>
+</html>
