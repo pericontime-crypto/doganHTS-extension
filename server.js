@@ -58,6 +58,14 @@ KRİTİK ÖNCELİK KURALI:
 - Diğer belgeler (KTT, Ruhsat, Poliçe) ile Eksper Raporu arasında çelişki varsa, her zaman EKSPER RAPORU'ndaki bilgiyi doğru kabul et. 
 - Diğer belgeleri sadece Eksper Raporu'nda bulunmayan veya okunamayan bilgiler için kullan.
 
+POLİÇE VE SİGORTA HİYERARŞİSİ:
+1. Eğer "Eksper Raporu" varsa:
+   - Poliçe No, Acente No ve Vade tarihlerini raporun en üstündeki "POLİÇE BİLGİLERİ" kısmından al.
+   - "ACENTE NO/POLİÇE NO" alanındaki "/" işaretinden sonraki kısım Poliçe No'dur.
+   - Buradaki "SİGORTALI ADI" ve "TC/VERGİ NO" bilgileri Karşı Tarafın sigortalı bilgileridir (Eğer mağdur araç sahibi ile farklıysa).
+2. Eğer "Eksper Raporu" YOKSA:
+   - Tüm poliçe bilgilerini "Karşı Poliçe" isimli belgeyi analiz ederek çıkar.
+
 EKSPER RAPORU ÖZEL KURALLARI:
 1. TARAF AYRIMI:
    - "TAZMİNAT TALEP EDEN" veya "MAĞDUR ARAÇ" başlığı altındaki tüm bilgiler BİZİM tarafımızdır.
@@ -65,12 +73,7 @@ EKSPER RAPORU ÖZEL KURALLARI:
    - "MAĞDUR ARAÇ SÜRÜCÜ BİLGİLERİ" = BİZİM sürücümüzdür.
    - "SİGORTALI ARACIN SÜRÜCÜSÜNE İLİŞKİN BİLGİLER" = KARŞI tarafın sürücüsüdür.
 
-2. POLİÇE VE SİGORTA KONTROLÜ:
-   - Eksper raporunun en üstündeki "POLİÇE BİLGİLERİ" bölümündeki kişi (Şerife İdiz gibi) tazminat talep edenle (Naile Turan gibi) aynı değilse, bu bilgiler KARŞI TARAFIN poliçesidir.
-   - "ACENTE NO/POLİÇE NO" kısmında "/" işaretinden sonraki ikinci büyük numara POLİÇE NUMARASIDIR.
-   - "POLİÇE VADESİ" kısmındaki ilk tarih Başlangıç, ikinci tarih Bitiş tarihidir.
-
-3. HASAR VE ONARIM BİLGİLERİ:
+2. HASAR VE ONARIM BİLGİLERİ:
    - "HASAR BİLGİLERİ" bölümünden: Kaza Tarihi, Hasar İli/İlçesi ve "Hasar Onarım Süresi" (İş Günü olarak) bilgilerini al.
    - "HASAR TUTARI" Tablosundan: "Toplam Tutar" bilgisini hasar miktarı olarak al.
 
