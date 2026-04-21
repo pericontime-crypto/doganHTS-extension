@@ -35,17 +35,39 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('analyzeBtn').addEventListener('click', async () => {
-  if (scannedDocuments.length === 0) return;
-  setStatus('⚡ Analiz yapılıyor...', 'loading');
+  setStatus('⚡ Evraklar hazırlanıyor...', 'loading');
   document.getElementById('analyzeBtn').disabled = true;
 
   try {
+    const documentsWithData = await Promise.all(scannedDocuments.map(async (doc) => {
+      try {
+        const response = await fetch(doc.url);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            const mimeType = blob.type || (doc.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+            resolve({ ...doc, base64, mimeType });
+          };
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.error('Dosya okunamadi:', doc.name, e);
+        return null;
+      }
+    }));
+
+    const validDocs = documentsWithData.filter(d => d !== null);
+    if (validDocs.length === 0) throw new Error('Evraklar okunamadı');
+
+    setStatus('⚡ AI Analizi yapılıyor...', 'loading');
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const formResponse = await chrome.tabs.sendMessage(tab.id, { action: 'collectFormFields' });
 
     const response = await chrome.runtime.sendMessage({
       action: 'analyzeDocuments',
-      documents: scannedDocuments,
+      documents: validDocs,
       formFields: formResponse.fields || {}
     });
 

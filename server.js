@@ -22,28 +22,11 @@ app.post('/analyze', async (req, res) => {
       return res.status(400).json({ error: 'Evrak bulunamadi' });
     }
 
-    const docContents = await Promise.all(
-      documents.map(async (doc) => {
-        try {
-          const response = await fetch(doc.url);
-          const buffer = await response.buffer();
-          const base64 = buffer.toString('base64');
-          const mimeType = doc.name.toLowerCase().endsWith('.pdf')
-            ? 'application/pdf'
-            : 'image/jpeg';
-          return { ...doc, base64, mimeType };
-        } catch (err) {
-          console.error('Evrak indirilemedi: ' + doc.name, err);
-          return null;
-        }
-      })
-    );
-
-    const validDocs = docContents.filter(function(d) { return d !== null; });
-
     const content = [];
 
-    validDocs.forEach(function(doc) {
+    documents.forEach(function(doc) {
+      if (!doc.base64) return;
+      
       content.push({ type: 'text', text: 'Evrak adi: ' + doc.name + ', Turu: ' + doc.type });
 
       if (doc.mimeType === 'application/pdf') {
@@ -54,7 +37,7 @@ app.post('/analyze', async (req, res) => {
       } else {
         content.push({
           type: 'image',
-          source: { type: 'base64', media_type: doc.mimeType, data: doc.base64 }
+          source: { type: 'base64', media_type: doc.mimeType || 'image/jpeg', data: doc.base64 }
         });
       }
     });
