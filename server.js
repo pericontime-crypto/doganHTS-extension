@@ -51,7 +51,12 @@ app.post('/analyze', async (req, res) => {
 
     content.push({
       type: 'text',
-      text: `Sen bir sigorta hukuku uzmanısın. Sana verilen belgeleri (özellikle Eksper Raporu ve KTT) çok titiz analiz et.
+      text: `Sen bir sigorta hukuku uzmanısın. Sana verilen belgeleri çok titiz analiz et.
+
+KRİTİK ÖNCELİK KURALI:
+- BİRİNCİL KAYNAK: Eğer belgeler arasında "Eksper Raporu" varsa, tüm bilgiler için MUTLAK ÖNCELİĞİ bu rapora ver. 
+- Diğer belgeler (KTT, Ruhsat, Poliçe) ile Eksper Raporu arasında çelişki varsa, her zaman EKSPER RAPORU'ndaki bilgiyi doğru kabul et. 
+- Diğer belgeleri sadece Eksper Raporu'nda bulunmayan veya okunamayan bilgiler için kullan.
 
 EKSPER RAPORU ÖZEL KURALLARI:
 1. TARAF AYRIMI:
